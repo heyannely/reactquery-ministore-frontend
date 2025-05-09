@@ -1,26 +1,37 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { persistQueryClient } from '@tanstack/react-query-persist-client';
-import { createIDBPersister } from '@tanstack/react-query-persist-client-idb';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import App from './App'
 
-import App from './App';
-import './index.css';
-const queryClient = new QueryClient();
-const persister = createIDBPersister();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 1000 * 60 * 60 * 24,
+      staleTime: 1000 * 60 * 5,
+      retry: 1,
+    },
+  },
+})
 
-persistQueryClient({
-  queryClient,
-  persister,
-  maxAge: 1000 * 60 * 60 * 24, // 24 hours
-});
+const localStoragePersister = createSyncStoragePersister({
+  storage: window.localStorage,
+})
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
-  </React.StrictMode>
-);
+  <PersistQueryClientProvider
+    client={queryClient}
+    persistOptions={{
+      persister: localStoragePersister,
+      maxAge: 1000 * 60 * 60 * 24, // 24h
+    }}
+onError={() => {
+console.error('Failed to restore React Query cache')
+}}
+  >
+    <App />
+    <ReactQueryDevtools initialIsOpen={false} />
+  </PersistQueryClientProvider>
+)
