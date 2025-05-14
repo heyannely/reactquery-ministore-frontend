@@ -9,12 +9,12 @@ export default function LoginForm() {
   // if the user refreshes and already has a token:
   useEffect(() => {
     const token = localStorage.getItem('jwt');
-    if (token) {
-      // re-apply header on mount
-      import('../api/client').then(({ setAuthToken }) =>
-        setAuthToken(token)
-      );
-    }
+    // if (token) {
+    //   // re-apply header on mount
+    //   import('../api/client').then(({ setAuthToken }) =>
+    //     setAuthToken(token)
+    //   );
+    // }
   }, []);
 
   const handleSubmit = e => {
